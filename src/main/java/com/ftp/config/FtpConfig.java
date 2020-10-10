@@ -1,4 +1,4 @@
-package com.sample2;
+package com.ftp.config;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.context.annotation.Bean;
