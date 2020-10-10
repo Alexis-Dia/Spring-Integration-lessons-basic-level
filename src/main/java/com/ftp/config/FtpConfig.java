@@ -47,7 +47,7 @@ public class FtpConfig {
                 .from(Ftp.inboundAdapter(ftpSessionFactory())
                         .preserveTimestamp(true)
                         .localDirectory(new File("public"))
-                        //.autoCreateLocalDirectory(true)
+                        .autoCreateLocalDirectory(true)
                     )
                 .channel("ftpInboundResultChannel")
                 .get();
