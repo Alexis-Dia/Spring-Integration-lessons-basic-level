@@ -44,19 +44,19 @@ public class FtpConfig {
     @Bean
     public IntegrationFlow ftpInboundFlow() {
         return IntegrationFlows
-                .from(Ftp.inboundAdapter(ftpSessionFactory())
-                        .preserveTimestamp(true)
-                        .localDirectory(new File("public"))
-                        .autoCreateLocalDirectory(true)
-                    )
-                .channel("ftpInboundResultChannel")
-                .get();
+            .from(Ftp.inboundAdapter(ftpSessionFactory())
+                .preserveTimestamp(true)
+                .localDirectory(new File("public"))
+                .autoCreateLocalDirectory(true)
+            )
+            .channel("ftpInboundResultChannel")
+            .get();
     }
 
     @Bean
     public IntegrationFlow processDownloaded() {
         return IntegrationFlows
-                .from("ftpInboundResultChannel")
+            .from("ftpInboundResultChannel")
             .transform(Transformers.objectToString())
             .log(msg -> "client1: " + msg.getPayload())
 /*                .transform(new FileToStringTransformer())
@@ -66,26 +66,25 @@ public class FtpConfig {
                                 .channelMapping("tweet", "Twitter")
                                 .resolutionRequired(false)
                                 .defaultOutputChannel("sendSystemOutChannel"))*/
-                //.channel("sendSystemOutChannel")
-                .get();
+            //.channel("sendSystemOutChannel")
+            .get();
     }
 
     @Bean
     public IntegrationFlow showOnConsole() {
-        System.out.println("11111");
         return f -> f.channel("sendSystemOutChannel")
-                .handle(
-                    (msg) -> {
-                        System.out.println("Msg = " + msg);
-                    }
-                );
+            .handle(
+                (msg) -> {
+                    System.out.println("Msg = " + msg);
+                }
+            );
     }
 
     @Bean
     public IntegrationFlow eMail() {
         return f -> f.channel("sendRawMailChannel")
-                .enrichHeaders(h -> h.<String>headerFunction("target", m -> m.getPayload().split(":")[1]))
-                .<String, String>transform(s -> s.substring(s.lastIndexOf(":")))
-                .channel("sendMailChannel");
+            .enrichHeaders(h -> h.<String>headerFunction("target", m -> m.getPayload().split(":")[1]))
+            .<String, String>transform(s -> s.substring(s.lastIndexOf(":")))
+            .channel("sendMailChannel");
     }
 }
