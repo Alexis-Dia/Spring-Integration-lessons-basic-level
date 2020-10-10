@@ -46,7 +46,7 @@ public class FtpConfig {
         return IntegrationFlows
                 .from(Ftp.inboundAdapter(ftpSessionFactory())
                         .preserveTimestamp(true)
-                        .localDirectory(new File("data9.txt"))
+                        .localDirectory(new File("public"))
                         //.autoCreateLocalDirectory(true)
                     )
                 .channel("ftpInboundResultChannel")
