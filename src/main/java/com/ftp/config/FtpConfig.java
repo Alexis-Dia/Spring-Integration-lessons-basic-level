@@ -85,7 +85,7 @@ public class FtpConfig {
     public IntegrationFlow eMail() {
         return f -> f.channel("sendRawMailChannel")
             .enrichHeaders(h -> h.<String>headerFunction("target", m -> m.getHeaders().toString()))
-            .<String, String>transform(s -> s.substring(s.lastIndexOf(":")))
+            .<String, String>transform(s -> s.substring(s.lastIndexOf(":") + 1))
             .channel("sendMailChannel");
     }
 
