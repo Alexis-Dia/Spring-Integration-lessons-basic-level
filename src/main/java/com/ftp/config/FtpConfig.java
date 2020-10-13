@@ -1,10 +1,14 @@
 package com.ftp.config;
 
+import com.ftp.transform.FileToStringTransfoemer;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.integration.dsl.*;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.MessageChannels;
+import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.ftp.dsl.Ftp;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.scheduling.PollerMetadata;
@@ -57,16 +61,13 @@ public class FtpConfig {
     public IntegrationFlow processDownloaded() {
         return IntegrationFlows
             .from("ftpInboundResultChannel")
-            .transform(Transformers.objectToString())
-            .log(msg -> "client1: " + msg.getPayload())
-/*                .transform(new FileToStringTransformer())
-                .<String, String>route(s -> s.split(":")[0],
-                        spec -> spec.prefix("send").suffix("Channel")
-                                .channelMapping("mail", "RawMail")
-                                .channelMapping("tweet", "Twitter")
-                                .resolutionRequired(false)
-                                .defaultOutputChannel("sendSystemOutChannel"))*/
-            //.channel("sendSystemOutChannel")
+            //.transform(FileToStringTransfoemer::transform)
+            .transform(msg -> FileToStringTransfoemer.transform(msg.toString()))
+            .<String, String> route(s -> s.split(":")[0],
+                spec -> spec.prefix("send").suffix("Channel")
+                    .channelMapping("mail", "RawMail")
+                    .resolutionRequired(false)
+                    .defaultOutputChannel("sendSystemOutChannel"))
             .get();
     }
 
@@ -75,7 +76,7 @@ public class FtpConfig {
         return f -> f.channel("sendSystemOutChannel")
             .handle(
                 (msg) -> {
-                    System.out.println("Msg = " + msg);
+                    System.out.println("Msg = " + msg.getPayload());
                 }
             );
     }
@@ -83,8 +84,9 @@ public class FtpConfig {
     @Bean
     public IntegrationFlow eMail() {
         return f -> f.channel("sendRawMailChannel")
-            .enrichHeaders(h -> h.<String>headerFunction("target", m -> m.getPayload().split(":")[1]))
+            .enrichHeaders(h -> h.<String>headerFunction("target", m -> m.getHeaders().toString()))
             .<String, String>transform(s -> s.substring(s.lastIndexOf(":")))
             .channel("sendMailChannel");
     }
+
 }
